@@ -1,4 +1,4 @@
-# MotorPH-Payroll-System
+# MotorPH-Payroll-System-Group 3
 A basic java based payroll system designed to automate the process of managing payroll for employees within MotorPH.
 # Features
 - displays employee details.
