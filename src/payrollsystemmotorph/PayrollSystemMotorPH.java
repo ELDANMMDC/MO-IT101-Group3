@@ -19,14 +19,16 @@ public class PayrollSystemMotorPH {
         Employee[] employees = initializeEmployees();
 
         System.out.println("Welcome to Motor PH Payroll System!");
-
-        while (true) {
+        
+        boolean exitProgram = false;
+        
+        while (!exitProgram) {
             System.out.println("Enter employee number (1-34) or 0 to exit:");
             int employeeNumber = scanner.nextInt();
             scanner.nextLine();
 
             if (employeeNumber == 0) {
-                System.out.println("Exiting...");
+                System.out.println("Exiting...Thank you for Using Motor PH Payroll System!");
                 break;
             } else if (employeeNumber < 1 || employeeNumber > 34) {
                 System.out.println("Invalid employee number. Please enter a number between 1 and 34.");
@@ -36,67 +38,73 @@ public class PayrollSystemMotorPH {
             Employee employee = employees[employeeNumber - 1];
             displayInfo(employee);
 
-            getWorkDays(scanner);
-            int[] hoursWorked = calculateMonthlyHW(scanner);
+            String[] workDate = getPaySlipDateRange(scanner);
+            double[] hoursAndIncome = monthlyHWcalc(scanner, employee.hourlyRate);
+            int totalRegularHours = (int) hoursAndIncome[0];
+            int totalOvertimeHours = (int) hoursAndIncome[1];
+            double grossIncome = hoursAndIncome[2];
+            double overtimePay = hoursAndIncome[3];
+            System.out.println("Total Regular Hours: " + totalRegularHours);
+            System.out.println("Total Overtime Hours: " + totalOvertimeHours);
+            System.out.println("\nGross Income: " + grossIncome);
 
-            double overtimePay = overtimeCalculation(hoursWorked[1], employee.hourlyRate);
-            double grossIncome = grossIncomeCalculation(employee.hourlyRate, hoursWorked[0], overtimePay);
-            double totalBenefits = totalBenefitsCalculation(employee);
-            double[] philHealthContribution = philHealthCalculation(employee);
-            double pagIbigContribution = pagIbigCalculation(employee);
-            double sssContribution = sssCalculation(employee, grossIncome);
-            double totalContributions = governmentContributions(sssContribution, philHealthContribution[1], pagIbigContribution);
-            double taxableIncome = taxableIncomeCalculation(grossIncome, totalContributions);
-            double withholdingTax = calculateWithholdingTax(taxableIncome);
-            double netIncome = calculateNetIncome(taxableIncome);
+            double totalBenefits = totalBenefitsCalc(employee);
+            double[] philHealthContribution = philHealthCalc(employee);
+            double pagIbigContribution = pag_ibigCalc(employee);
+            double sssContribution = sssCalc(employee, grossIncome);
+            double totalContributions = govtContributions(sssContribution, philHealthContribution[1], pagIbigContribution);
+            double taxableIncome = taxableIncomeCalc(grossIncome, totalContributions);
+            double withholdingTax = withholdingTaxCalc(taxableIncome);
+            double netIncome = netIncomeCalc(taxableIncome);
 
             while (true) {
     // Ask if the user wants to generate a payslip
-            System.out.println("\nGenerate payslip? (yes/no): ");
+            System.out.println("\nGenerate payslip (yes/no): ");
             String payslipOption = scanner.nextLine().trim().toLowerCase();
 
             if (payslipOption.equals("yes")) {
                 // Generate the payslip
-                generatePayslip(employee, grossIncome, overtimePay, totalBenefits, philHealthContribution, pagIbigContribution, sssContribution, totalContributions, taxableIncome, withholdingTax, netIncome);
+                generatePayslip(employee, grossIncome, overtimePay, totalBenefits, philHealthContribution, pagIbigContribution, sssContribution, totalContributions, taxableIncome, withholdingTax, netIncome,workDate);
             } else if (!payslipOption.equals("no")) {
                 System.out.println("Invalid input. Please enter 'yes' or 'no'.");
                 continue; // Restart the loop if input is invalid
             }
 
-            // Ask if the user wants to calculate another employee's salary
-            System.out.println("\nCalculate another employee’s salary? (yes/no): ");
+            // Ask if the user wants to search another employee
+            System.out.println("\nSearch another employee? (yes/no): ");
             String option = scanner.nextLine().trim().toLowerCase();
 
             if (option.equals("no")) {
-                System.out.println("Exiting...");
-                break; // Exit the loop if the user doesn't want to calculate another salary
+                System.out.println("Exiting... Thank you for Using Motor PH Payroll System!");
+                exitProgram = true; // Exit the loop if the user doesn't want to calculate another salary
+                break;
             } else if (!option.equals("yes")) {
                 System.out.println("Invalid input. Please enter 'yes' or 'no'.");
                 }
             }
-
-        scanner.close();
+            
+            scanner.close();
     }
 }
 
     static class Employee {
-        private int empId;
-        private String empName;
-        private String empBirthday;
-        private String empAddress;
-        private String phoneNum;
-        private String sssNum;
-        private String philHNum;
-        private String tinNum;
-        private String pagibigNum;
-        private String empStatus;
-        private String empPosition;
-        private String immSupervisor;
-        private double basicSal;
-        private double riceSub;
-        private double phoneAll;
-        private double clothingAll;
-        private double grossSMRate;
+        private final int empId;
+        private final String empName;
+        private final String empBirthday;
+        private final String empAddress;
+        private final String phoneNum;
+        private final String sssNum;
+        private final String philHNum;
+        private final String tinNum;
+        private final String pagibigNum;
+        private final String empStatus;
+        private final String empPosition;
+        private final String immSupervisor;
+        private final double basicSal;
+        private final double riceSub;
+        private final double phoneAll;
+        private final double clothingAll;
+        private final double grossSMRate;
         private double hourlyRate;
 
         public Employee(int empId, String empName, String empBirthday, String empAddress, String phoneNum, String sssNum,
@@ -289,12 +297,12 @@ public class PayrollSystemMotorPH {
         System.out.println("                                                     ");
     }
 
-    // Prompt user for work days
-    private static String[] getWorkDays(Scanner scanner) {
+    // Prompt user for work duration
+    private static String[] getPaySlipDateRange(Scanner scanner) {
         String[] workDate = new String[2];
 
         System.out.println("---------MONTHLY ATTENDANCE RECORD---------");
-        System.out.println("\nEnter work period (MM/DD/YYYY)");
+        System.out.println("\nEnter Payslip Date Range (MM/DD/YYYY)");
 
         LocalDate startDate = getValidDate(scanner, "Start date: ");
         workDate[0] = startDate.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
@@ -327,11 +335,12 @@ public class PayrollSystemMotorPH {
     }
 
     // Calculate monthly hours worked
-    public static int[] calculateMonthlyHW(Scanner scanner) {
+    public static double[] monthlyHWcalc(Scanner scanner, double hourlyRate) {
         int totalRegHours = 0;
         int totalOvtHours = 0;
+        double overtimePay = 0;
 
-        System.out.print("Enter number of work days in a month: ");
+        System.out.print("Enter number of days worked in a month: ");
         int numberOfWorkDays = scanner.nextInt();
         scanner.nextLine();
 
@@ -343,7 +352,7 @@ public class PayrollSystemMotorPH {
             System.out.print("Clock-out time (HH:MM): ");
             String clockOutTime = scanner.nextLine();
 
-            int totalWorkedHours = calculateHoursWorked(clockInTime, clockOutTime);
+            int totalWorkedHours = hoursWorkedCalc(clockInTime, clockOutTime);
 
             if (totalWorkedHours > 8) {
                 int regHours = 8;
@@ -352,20 +361,20 @@ public class PayrollSystemMotorPH {
                 totalOvtHours += overtimeHours;
                 System.out.println("Regular Hours: " + regHours);
                 System.out.println("Overtime Hours: " + overtimeHours);
+                overtimePay += overtimeCalc(overtimeHours, hourlyRate);
             } else {
                 totalRegHours += totalWorkedHours;
                 System.out.println("Regular Hours: " + totalWorkedHours);
                 System.out.println("Overtime Hours: 0");
             }
         }
-
-        System.out.println("\nTotal Regular Hours Worked: " + totalRegHours);
-        System.out.println("Total Overtime Hours Worked: " + totalOvtHours);
-        return new int[] { totalRegHours, totalOvtHours };
+            double grossIncome = grossIncomeCalc(hourlyRate, totalRegHours, overtimePay);
+            
+        return new double[] {totalRegHours, totalOvtHours, grossIncome, overtimePay};
     }
 
     // Calculate total hours worked in a day
-    private static int calculateHoursWorked(String clockInTime, String clockOutTime) {
+    private static int hoursWorkedCalc(String clockInTime, String clockOutTime) {
         String[] clockInParts = clockInTime.split(":");
         String[] clockOutParts = clockOutTime.split(":");
 
@@ -401,48 +410,48 @@ public class PayrollSystemMotorPH {
     }
 
     // Calculate overtime pay
-    public static double overtimeCalculation(int totalOvertimeHoursWorkedInAMonth, double hourlyRate) {
+    public static double overtimeCalc(int totalOvertimeHoursWorkedInAMonth, double hourlyRate) {
         double overtimePay = 1.25 * hourlyRate * totalOvertimeHoursWorkedInAMonth;
         return overtimePay;
     }
 
     // Calculate gross income
-    public static double grossIncomeCalculation(double hourlyRate, int totalRegularHoursWorkedInAMonth,
+    public static double grossIncomeCalc(double hourlyRate, int totalRegularHoursWorkedInAMonth,
             double overtimePay) {
         double grossIncome = (hourlyRate * totalRegularHoursWorkedInAMonth) + overtimePay;
         return grossIncome;
     }
     
     // Calculate total benefits including rice subsidy, phone allowance, and clothing allowance
-    public static double totalBenefitsCalculation(Employee employee) {
+    public static double totalBenefitsCalc(Employee employee) {
         double totalBenefits = employee.riceSub + employee.phoneAll + employee.clothingAll;
         return totalBenefits;
     }
 
     // Calculate SSS contribution
-    public static double sssCalculation(Employee employee, double grossIncome) {
+    public static double sssCalc(Employee employee, double grossIncome) {
         double sssMonthlyContribution = 0;
 
-        double[] BASICSALARY_RANGES = { 3250, 3750, 4250, 4750, 5250, 5750, 6250, 6750, 7250, 7750, 8250, 8750,
+        double[] BasicSal = { 3250, 3750, 4250, 4750, 5250, 5750, 6250, 6750, 7250, 7750, 8250, 8750,
                 9250, 9750, 10250, 10750, 11250, 11750, 12250, 12750, 13250, 13750, 14250, 14750, 15250, 15750, 16250,
                 16750, 17250, 17750, 18250, 18750, 19250, 19750, 20250, 20750, 21250, 21750, 22250, 22750, 23250, 23750,
                 24250, 24750 };
 
-        double[] SSS_MONTHLY_CONTRIBUTIONS = { 135.00, 157.50, 180.00, 202.50, 225.00, 247.50, 270.00, 292.50, 315.00,
+        double[] SSS_MonthlyCont = { 135.00, 157.50, 180.00, 202.50, 225.00, 247.50, 270.00, 292.50, 315.00,
                 337.50, 360.00, 382.50, 405.00, 427.50, 450.00, 472.50, 495.00, 517.50, 540.00, 562.50, 585.00, 607.50,
                 630.00, 652.50, 675.00, 697.50, 720.00, 742.50, 765.00, 787.50, 810.00, 832.50, 855.00, 877.50, 900.00,
                 922.50, 945.00, 967.50, 990.00, 1012.50, 1035.00, 1057.50, 1080.00, 1102.50 };
 
         // Get the monthly SSS contribution based on employee's gross income
-        for (int i = 0; i < BASICSALARY_RANGES.length; i++) {
-            if (grossIncome < BASICSALARY_RANGES[i]) {
-                sssMonthlyContribution = SSS_MONTHLY_CONTRIBUTIONS[i];
+        for (int i = 0; i < BasicSal.length; i++) {
+            if (grossIncome < BasicSal[i]) {
+                sssMonthlyContribution = SSS_MonthlyCont[i];
                 break;
             }
         }
 
         // For basic salary over 24,750
-        if (grossIncome >= BASICSALARY_RANGES[BASICSALARY_RANGES.length - 1]) {
+        if (grossIncome >= BasicSal[BasicSal.length - 1]) {
             sssMonthlyContribution = 1125.00;
         }
 
@@ -450,7 +459,7 @@ public class PayrollSystemMotorPH {
     }
 
     // Calculate PhilHealth contribution
-    public static double[] philHealthCalculation(Employee employee) {
+    public static double[] philHealthCalc(Employee employee) {
         double premiumRate = 0.03;
         double monthlyPremium = 0;
 
@@ -471,7 +480,7 @@ public class PayrollSystemMotorPH {
     }
 
     // Calculate Pag-IBIG contribution
-    public static double pagIbigCalculation(Employee employee) {
+    public static double pag_ibigCalc(Employee employee) {
         double pagIbigMonthlyContribution = 0;
 
         if (employee.basicSal >= 1000 && employee.basicSal <= 1500) {
@@ -489,14 +498,14 @@ public class PayrollSystemMotorPH {
     }
 
     // Calculate total government contributions
-    public static double governmentContributions(double sssMonthlyContribution, double employeeShare,
+    public static double govtContributions(double sssMonthlyContribution, double employeeShare,
             double pagIbigMonthlyContribution) {
         double totalMonthlyContribution = sssMonthlyContribution + employeeShare + pagIbigMonthlyContribution;
         return totalMonthlyContribution;
     }
 
     // Calculate taxable income
-    public static double taxableIncomeCalculation(double grossIncome, double totalMonthlyContribution) {
+    public static double taxableIncomeCalc(double grossIncome, double totalMonthlyContribution) {
         double taxableIncome = grossIncome - totalMonthlyContribution;
 
         // Prevent a negative value for employee's income
@@ -508,7 +517,7 @@ public class PayrollSystemMotorPH {
     }
 
     // Calculate withholding tax
-    public static double calculateWithholdingTax(double taxableIncome) {
+    public static double withholdingTaxCalc(double taxableIncome) {
         // Withholding tax is calculated after applying deductions
         double withholdingTax = 0;
 
@@ -531,27 +540,37 @@ public class PayrollSystemMotorPH {
     }
 
     // Calculate net income
-    public static double calculateNetIncome(double taxableIncome) {
-        double netIncome = taxableIncome - calculateWithholdingTax(taxableIncome);
+    public static double netIncomeCalc(double taxableIncome) {
+        double netIncome = taxableIncome - withholdingTaxCalc(taxableIncome);
         return netIncome;
     }
     
     private static void generatePayslip(Employee employee, double grossIncome, double overtimePay, double totalBenefits,
             double[] philHealthContribution, double pagIbigContribution, double sssContribution, double totalContributions,
-            double taxableIncome, double withholdingTax, double netIncome) {
-        System.out.println("\n-----------PAYSLIP-------------");
+            double taxableIncome, double withholdingTax, double netIncome, String[] paySlipDateRange) {
+        System.out.println("\n-----------MONTHLY PAYSLIP-------------");
         System.out.println("Employee ID: " + employee.empId);
         System.out.println("Name: " + employee.empName);
+        System.out.println("\nDate Generated:");
         System.out.println("Date: " + LocalDate.now().format(DateTimeFormatter.ofPattern("MM/dd/yyyy")));
-        System.out.println("Gross Income: PHP " + grossIncome);
+        System.out.println("------------");
+        System.out.println("PAYSLIP DATE RANGE");
+        System.out.println("\nStart Date: " + paySlipDateRange[0]);
+        System.out.println("End Date: " + paySlipDateRange[1]);
+        System.out.println("------------");
+        System.out.println("EARNINGS");
+        System.out.println("\nGross Income: PHP " + grossIncome);
         System.out.println("Overtime Pay: PHP " + overtimePay);
         System.out.println("Total Benefits: PHP " + totalBenefits);
-        System.out.println("SSS Contribution: PHP " + sssContribution);
+        System.out.println("------------");
+        System.out.println("DEDUCTIONS");
+        System.out.println("\nSSS Contribution: PHP " + sssContribution);
         System.out.println("PhilHealth Contribution (Employee Share): PHP " + philHealthContribution[1]);
         System.out.println("Pag-IBIG Contribution: PHP " + pagIbigContribution);
         System.out.println("Total Contributions: PHP " + totalContributions);
         System.out.println("Taxable Income: PHP " + taxableIncome);
         System.out.println("Withholding Tax: PHP " + withholdingTax);
+        System.out.println("------------");
         System.out.println("Net Income: PHP " + netIncome);
         System.out.println("--------------------------------");
     }
