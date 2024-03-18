@@ -430,9 +430,8 @@ public class PayrollSystemMotorPH {
 
     // Calculate SSS contribution
     public static double sssCalc(Employee employee, double grossIncome) {
-        double sssMonthlyContribution = 0;
-
-        double[] BasicSal = { 3250, 3750, 4250, 4750, 5250, 5750, 6250, 6750, 7250, 7750, 8250, 8750,
+        
+        double[] BasicSalThresholds = { 3250, 3750, 4250, 4750, 5250, 5750, 6250, 6750, 7250, 7750, 8250, 8750,
                 9250, 9750, 10250, 10750, 11250, 11750, 12250, 12750, 13250, 13750, 14250, 14750, 15250, 15750, 16250,
                 16750, 17250, 17750, 18250, 18750, 19250, 19750, 20250, 20750, 21250, 21750, 22250, 22750, 23250, 23750,
                 24250, 24750 };
@@ -441,17 +440,19 @@ public class PayrollSystemMotorPH {
                 337.50, 360.00, 382.50, 405.00, 427.50, 450.00, 472.50, 495.00, 517.50, 540.00, 562.50, 585.00, 607.50,
                 630.00, 652.50, 675.00, 697.50, 720.00, 742.50, 765.00, 787.50, 810.00, 832.50, 855.00, 877.50, 900.00,
                 922.50, 945.00, 967.50, 990.00, 1012.50, 1035.00, 1057.50, 1080.00, 1102.50 };
+        
+        double sssMonthlyContribution = 0;
 
         // Get the monthly SSS contribution based on employee's gross income
-        for (int i = 0; i < BasicSal.length; i++) {
-            if (grossIncome < BasicSal[i]) {
+        for (int i = 0; i < BasicSalThresholds.length; i++) {
+            if (grossIncome < BasicSalThresholds[i]) {
                 sssMonthlyContribution = SSS_MonthlyCont[i];
                 break;
             }
         }
 
         // For basic salary over 24,750
-        if (grossIncome >= BasicSal[BasicSal.length - 1]) {
+        if (grossIncome >= BasicSalThresholds[BasicSalThresholds.length - 1]) {
             sssMonthlyContribution = 1125.00;
         }
 
