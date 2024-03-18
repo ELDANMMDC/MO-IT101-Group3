@@ -28,7 +28,7 @@ public class PayrollSystemMotorPH {
             scanner.nextLine();
 
             if (employeeNumber == 0) {
-                System.out.println("Exiting...Thank you for Using Motor PH Payroll System!");
+                System.out.println("Exiting...Thank you for using Motor PH Payroll System!");
                 break;
             } else if (employeeNumber < 1 || employeeNumber > 34) {
                 System.out.println("Invalid employee number. Please enter a number between 1 and 34.");
@@ -44,7 +44,7 @@ public class PayrollSystemMotorPH {
             int totalOvertimeHours = (int) hoursAndIncome[1];
             double grossIncome = hoursAndIncome[2];
             double overtimePay = hoursAndIncome[3];
-            System.out.println("Total Regular Hours: " + totalRegularHours);
+            System.out.println("\nTotal Regular Hours: " + totalRegularHours);
             System.out.println("Total Overtime Hours: " + totalOvertimeHours);
             System.out.println("\nGross Income: " + grossIncome);
 
@@ -75,7 +75,7 @@ public class PayrollSystemMotorPH {
             String option = scanner.nextLine().trim().toLowerCase();
 
             if (option.equals("no")) {
-                System.out.println("Exiting... Thank you for Using Motor PH Payroll System!");
+                System.out.println("Exiting... Thank you for using Motor PH Payroll System!");
                 exitProgram = true; // Exit the loop if the user doesn't want to calculate another salary
                 break;
             } else if (!option.equals("yes")) {
