@@ -64,7 +64,7 @@ public class PayrollSystemMotorPH {
 
             if (payslipOption.equals("yes")) {
                 // Generate the payslip
-                generatePayslip(employee, grossIncome, overtimePay, totalBenefits, philHealthContribution, pagIbigContribution, sssContribution, totalContributions, taxableIncome, withholdingTax, netIncome,workDate);
+                generatePAYSLIP(employee, grossIncome, overtimePay, totalBenefits, philHealthContribution, pagIbigContribution, sssContribution, totalContributions, taxableIncome, withholdingTax, netIncome,workDate);
             } else if (!payslipOption.equals("no")) {
                 System.out.println("Invalid input. Please enter 'yes' or 'no'.");
                 continue; // Restart the loop if input is invalid
@@ -546,7 +546,7 @@ public class PayrollSystemMotorPH {
         return netIncome;
     }
     
-    private static void generatePayslip(Employee employee, double grossIncome, double overtimePay, double totalBenefits,
+    private static void generatePAYSLIP(Employee employee, double grossIncome, double overtimePay, double totalBenefits,
             double[] philHealthContribution, double pagIbigContribution, double sssContribution, double totalContributions,
             double taxableIncome, double withholdingTax, double netIncome, String[] paySlipDateRange) {
         System.out.println("\n-----------MONTHLY PAYSLIP-------------");
